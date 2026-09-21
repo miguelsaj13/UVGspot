@@ -7,7 +7,7 @@ import gt.uvg.uvgspot.navigation.AppNavigation
 import gt.uvg.uvgspot.ui.theme.UVGspotTheme
 
 class MainActivity : ComponentActivity() {
-
+    // Versión para el pull request lista
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
