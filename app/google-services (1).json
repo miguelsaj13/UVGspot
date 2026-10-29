@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "271945298368",
+    "project_id": "uvgspot",
+    "storage_bucket": "uvgspot.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:271945298368:android:7d8486c9394b84dad21825",
+        "android_client_info": {
+          "package_name": "gt.uvg.uvgspot"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyA1Iy_aoEl0g0i5JBPCYCAULliP9VkLkFg"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
