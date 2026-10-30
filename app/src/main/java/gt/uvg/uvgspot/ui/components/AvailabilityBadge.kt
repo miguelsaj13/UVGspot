@@ -6,10 +6,10 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
-import gt.uvg.uvgspot.data.model.Availability
+import gt.uvg.uvgspot.domain.model.Availability
 
 @Composable
 fun AvailabilityBadge(
@@ -22,21 +22,26 @@ fun AvailabilityBadge(
 
     when (availability) {
         Availability.HIGH -> {
-            text = "Disponibilidad: Alta"
+            text = "Estimada: Alta"
             backgroundColor = Color(0xFFDDF5DF)
             textColor = Color(0xFF2E7D32)
         }
 
         Availability.MEDIUM -> {
-            text = "Disponibilidad: Media"
+            text = "Estimada: Media"
             backgroundColor = Color(0xFFFFF1C2)
             textColor = Color(0xFF9A6700)
         }
 
         Availability.LOW -> {
-            text = "Disponibilidad: Baja"
+            text = "Estimada: Baja"
             backgroundColor = Color(0xFFFADDDD)
             textColor = Color(0xFFBA1A1A)
+        }
+        Availability.UNKNOWN -> {
+            text = "Sin información reciente"
+            backgroundColor = Color(0xFFEDEEEF)
+            textColor = Color(0xFF414751)
         }
     }
 
