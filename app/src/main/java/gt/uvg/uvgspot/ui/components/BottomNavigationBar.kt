@@ -1,9 +1,10 @@
 package gt.uvg.uvgspot.ui.components
 
-import androidx.compose.material.icons.Icons
+import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.material.icons.filled.FavoriteBorder
 import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.LocationOn
+import androidx.compose.material.icons.Icons
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.NavigationBar
@@ -12,6 +13,7 @@ import androidx.compose.material3.NavigationBarItemDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.Modifier
 
 enum class BottomDestination {
     HOME,
@@ -24,9 +26,12 @@ fun BottomNavigationBar(
     selectedDestination: BottomDestination,
     onHomeClick: () -> Unit = {},
     onSpacesClick: () -> Unit = {},
-    onFavoritesClick: () -> Unit = {}
+    onFavoritesClick: () -> Unit = {},
+    modifier: Modifier = Modifier
 ) {
     NavigationBar(
+        modifier = modifier,
+        windowInsets = WindowInsets(0, 0, 0, 0),
         containerColor = MaterialTheme.colorScheme.surface
     ) {
 
@@ -36,12 +41,12 @@ fun BottomNavigationBar(
             icon = {
                 Icon(
                     imageVector = Icons.Default.Home,
-                    contentDescription = "Home"
+                    contentDescription = "Inicio"
                 )
             },
             label = {
                 Text(
-                    text = "Home",
+                    text = "Inicio",
                     style = MaterialTheme.typography.labelMedium
                 )
             },
@@ -54,12 +59,12 @@ fun BottomNavigationBar(
             icon = {
                 Icon(
                     imageVector = Icons.Default.LocationOn,
-                    contentDescription = "Spaces"
+                    contentDescription = "Espacios"
                 )
             },
             label = {
                 Text(
-                    text = "Spaces",
+                    text = "Espacios",
                     style = MaterialTheme.typography.labelMedium
                 )
             },
@@ -72,12 +77,12 @@ fun BottomNavigationBar(
             icon = {
                 Icon(
                     imageVector = Icons.Default.FavoriteBorder,
-                    contentDescription = "Favorites"
+                    contentDescription = "Favoritos"
                 )
             },
             label = {
                 Text(
-                    text = "Favorites",
+                    text = "Favoritos",
                     style = MaterialTheme.typography.labelMedium
                 )
             },
