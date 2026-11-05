@@ -3,16 +3,17 @@ package gt.uvg.uvgspot.ui.screens.login
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Button
@@ -22,49 +23,45 @@ import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalFocusManager
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import gt.uvg.uvgspot.ui.theme.StudyGray50
 import gt.uvg.uvgspot.ui.theme.StudyTextSecondary
-import gt.uvg.uvgspot.ui.theme.UVGspotTheme
-
 
 @Composable
 fun LoginRoute(
     onLoginClick: () -> Unit,
-    viewModel: LoginViewModel = viewModel()
+    viewModel: LoginViewModel
 ) {
+    val uiState by viewModel.uiState.collectAsStateWithLifecycle()
+    val focusManager = LocalFocusManager.current
     LoginScreen(
-        carnet = viewModel.carnet,
-        email = viewModel.email,
-        password = viewModel.password,
-        carnetError = viewModel.carnetError,
-        emailError = viewModel.emailError,
-        passwordError = viewModel.passwordError,
-        isFormValid = viewModel.isFormValid,
+        uiState = uiState,
         onCarnetChange = viewModel::onCarnetChange,
         onEmailChange = viewModel::onEmailChange,
         onPasswordChange = viewModel::onPasswordChange,
-        onLoginClick = onLoginClick
+        onLoginClick = {
+            focusManager.clearFocus()
+            viewModel.clearPassword()
+            onLoginClick()
+        }
     )
 }
 
 @Composable
 fun LoginScreen(
-    carnet: String,
-    email: String,
-    password: String,
-    carnetError: String?,
-    emailError: String?,
-    passwordError: String?,
-    isFormValid: Boolean,
+    uiState: LoginUiState,
     onCarnetChange: (String) -> Unit,
     onEmailChange: (String) -> Unit,
     onPasswordChange: (String) -> Unit,
@@ -118,29 +115,32 @@ fun LoginScreen(
 
         LoginTextField(
             label = "CARNET",
-            value = carnet,
+            value = uiState.carnet,
             onValueChange = onCarnetChange,
-            errorMessage = carnetError,
+            errorMessage = uiState.carnetError,
+            placeholder = "Ej. 24123",
             keyboardType = KeyboardType.Number
         )
 
         Spacer(modifier = Modifier.height(18.dp))
 
         LoginTextField(
-            label = "EMAIL",
-            value = email,
+            label = "CORREO",
+            value = uiState.email,
             onValueChange = onEmailChange,
-            errorMessage = emailError,
+            errorMessage = uiState.emailError,
+            placeholder = "estudiante@uvg.edu.gt",
             keyboardType = KeyboardType.Email
         )
 
         Spacer(modifier = Modifier.height(18.dp))
 
         LoginTextField(
-            label = "PASSWORD",
-            value = password,
+            label = "CONTRASEÑA",
+            value = uiState.password,
             onValueChange = onPasswordChange,
-            errorMessage = passwordError,
+            errorMessage = uiState.passwordError,
+            placeholder = "Mínimo 8 caracteres",
             keyboardType = KeyboardType.Password,
             isPassword = true
         )
@@ -149,7 +149,7 @@ fun LoginScreen(
 
         Button(
             onClick = onLoginClick,
-            enabled = isFormValid,
+            enabled = uiState.isFormValid,
             modifier = Modifier
                 .fillMaxWidth()
                 .height(50.dp),
@@ -160,11 +160,17 @@ fun LoginScreen(
             )
         ) {
             Text(
-                text = "Iniciar Sesión",
+                text = "Continuar",
                 style = MaterialTheme.typography.labelMedium
             )
         }
 
+        Spacer(modifier = Modifier.height(12.dp))
+        Text(
+            text = "Este formulario valida el ingreso al prototipo; no verifica credenciales UVG. Usa una contraseña de prueba.",
+            style = MaterialTheme.typography.labelMedium,
+            color = StudyTextSecondary
+        )
         Spacer(modifier = Modifier.height(24.dp))
     }
 }
@@ -176,9 +182,12 @@ private fun LoginTextField(
     onValueChange: (String) -> Unit,
     errorMessage: String?,
     keyboardType: KeyboardType,
-    isPassword: Boolean = false
+    placeholder: String,
+    isPassword: Boolean = false,
+    modifier: Modifier = Modifier
 ) {
-    Column {
+    val focusManager = LocalFocusManager.current
+    Column(modifier = modifier) {
         Text(
             text = label,
             style = MaterialTheme.typography.labelMedium,
@@ -190,8 +199,9 @@ private fun LoginTextField(
         OutlinedTextField(
             value = value,
             onValueChange = onValueChange,
-            modifier = Modifier.fillMaxWidth(),
+            modifier = Modifier.fillMaxWidth().semantics { contentDescription = label },
             singleLine = true,
+            placeholder = { Text(placeholder) },
             isError = errorMessage != null,
             supportingText = {
                 if (errorMessage != null) {
@@ -205,7 +215,11 @@ private fun LoginTextField(
             } else {
                 VisualTransformation.None
             },
-            keyboardOptions = KeyboardOptions(keyboardType = keyboardType),
+            keyboardOptions = KeyboardOptions(
+                keyboardType = keyboardType,
+                imeAction = if (isPassword) ImeAction.Done else ImeAction.Next
+            ),
+            keyboardActions = KeyboardActions(onDone = { focusManager.clearFocus() }),
             colors = OutlinedTextFieldDefaults.colors(
                 focusedContainerColor = MaterialTheme.colorScheme.surface,
                 unfocusedContainerColor = MaterialTheme.colorScheme.surface,
@@ -213,26 +227,6 @@ private fun LoginTextField(
                 focusedBorderColor = MaterialTheme.colorScheme.primary,
                 unfocusedBorderColor = StudyGray50
             )
-        )
-    }
-}
-
-@Preview(showBackground = true, showSystemUi = true)
-@Composable
-private fun LoginScreenPreview() {
-    UVGspotTheme {
-        LoginScreen(
-            carnet = "24123",
-            email = "student@uvg.edu.gt",
-            password = "12345678",
-            carnetError = null,
-            emailError = null,
-            passwordError = null,
-            isFormValid = true,
-            onCarnetChange = {},
-            onEmailChange = {},
-            onPasswordChange = {},
-            onLoginClick = {}
         )
     }
 }
