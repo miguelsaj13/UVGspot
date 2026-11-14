@@ -3,6 +3,7 @@ plugins {
     alias(libs.plugins.ksp)
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.compose)
+    alias(libs.plugins.firebase.crashlytics)
 }
 
 android {
@@ -65,6 +66,7 @@ dependencies {
     implementation(libs.androidx.lifecycle.viewmodel.compose)
     implementation(libs.androidx.compose.material.icons.extended)
     implementation(libs.androidx.navigation.compose)
+    implementation(libs.firebase.crashlytics)
     // Images
     implementation(libs.coil.compose)
     implementation(libs.coil.network.okhttp)

@@ -48,7 +48,7 @@ fun LoginRoute(
     val focusManager = LocalFocusManager.current
     LoginScreen(
         uiState = uiState,
-        onCarnetChange = viewModel::onCarnetChange,
+        onStudentIdChange = viewModel::onStudentIdChage,
         onEmailChange = viewModel::onEmailChange,
         onPasswordChange = viewModel::onPasswordChange,
         onLoginClick = {
@@ -62,7 +62,7 @@ fun LoginRoute(
 @Composable
 fun LoginScreen(
     uiState: LoginUiState,
-    onCarnetChange: (String) -> Unit,
+    onStudentIdChange: (String) -> Unit,
     onEmailChange: (String) -> Unit,
     onPasswordChange: (String) -> Unit,
     onLoginClick: () -> Unit,
@@ -115,9 +115,9 @@ fun LoginScreen(
 
         LoginTextField(
             label = "CARNET",
-            value = uiState.carnet,
-            onValueChange = onCarnetChange,
-            errorMessage = uiState.carnetError,
+            value = uiState.studentId,
+            onValueChange = onStudentIdChange,
+            errorMessage = uiState.studentIdError,
             placeholder = "Ej. 24123",
             keyboardType = KeyboardType.Number
         )

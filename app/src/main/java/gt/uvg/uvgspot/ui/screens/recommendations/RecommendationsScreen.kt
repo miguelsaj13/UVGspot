@@ -204,7 +204,6 @@ private fun RecommendationsHeader(
             modifier = Modifier.weight(1f)
         )
 
-        // Mantiene el título visualmente centrado
         Spacer(
             modifier = Modifier.size(48.dp)
         )

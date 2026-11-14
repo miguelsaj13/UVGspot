@@ -4,6 +4,7 @@ import com.google.firebase.auth.FirebaseAuth
 import gt.uvg.uvgspot.data.remote.toDataError
 import gt.uvg.uvgspot.domain.model.DataError
 import gt.uvg.uvgspot.domain.model.DataResult
+import gt.uvg.uvgspot.domain.repository.CrashReporter
 import gt.uvg.uvgspot.domain.repository.SessionRepository
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.sync.Mutex
@@ -11,7 +12,11 @@ import kotlinx.coroutines.sync.withLock
 import kotlinx.coroutines.tasks.await
 import kotlinx.coroutines.withTimeoutOrNull
 
-class FirebaseSessionRepository(private val auth: FirebaseAuth) : SessionRepository {
+class FirebaseSessionRepository(
+    private val auth: FirebaseAuth,
+    private val crashReporter: CrashReporter
+) : SessionRepository {
+
     private val sessionMutex = Mutex()
 
     override suspend fun ensureAnonymousSession(): DataResult<String> = sessionMutex.withLock {
@@ -20,13 +25,17 @@ class FirebaseSessionRepository(private val auth: FirebaseAuth) : SessionReposit
             else DataResult.Failure(DataError.AUTHENTICATION)
         }
         try {
-            val result = withTimeoutOrNull(AUTH_TIMEOUT_MILLIS) { auth.signInAnonymously().await() }
-                ?: return@withLock DataResult.Failure(DataError.OFFLINE)
+            val result = withTimeoutOrNull(AUTH_TIMEOUT_MILLIS) {
+                auth.signInAnonymously().await()
+            } ?: return@withLock DataResult.Failure(DataError.OFFLINE)
+
             val uid = result.user?.uid
-            if (uid != null) DataResult.Success(uid) else DataResult.Failure(DataError.AUTHENTICATION)
+            if (uid != null) DataResult.Success(uid)
+            else DataResult.Failure(DataError.AUTHENTICATION)
         } catch (exception: CancellationException) {
             throw exception
         } catch (exception: Exception) {
+            crashReporter.recordNonFatal(exception)
             DataResult.Failure(exception.toDataError())
         }
     }

@@ -9,7 +9,7 @@ class LoginViewModel : ViewModel() {
     private val _uiState = MutableStateFlow(LoginUiState())
     val uiState = _uiState.asStateFlow()
 
-    fun onCarnetChange(value: String) = _uiState.update { it.copy(carnet = value) }
+    fun onStudentIdChage(value: String) = _uiState.update { it.copy(studentId = value) }
     fun onEmailChange(value: String) = _uiState.update { it.copy(email = value) }
     fun onPasswordChange(value: String) = _uiState.update { it.copy(password = value) }
     fun clearPassword() = _uiState.update { it.copy(password = "") }
