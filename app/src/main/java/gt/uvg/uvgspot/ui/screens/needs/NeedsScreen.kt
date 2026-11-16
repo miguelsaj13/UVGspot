@@ -199,6 +199,8 @@ fun NeedsScreen(
                     )
                 }
 
+                Spacer(modifier = Modifier.height(28.dp))
+
                 Spacer(modifier = Modifier.weight(1f))
 
                 Button(

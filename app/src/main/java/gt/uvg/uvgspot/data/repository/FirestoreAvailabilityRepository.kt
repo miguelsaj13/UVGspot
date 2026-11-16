@@ -15,6 +15,7 @@ import gt.uvg.uvgspot.domain.model.DataResult
 import gt.uvg.uvgspot.domain.model.ReportSubmission
 import gt.uvg.uvgspot.domain.model.SubmissionStatus
 import gt.uvg.uvgspot.domain.repository.AvailabilityRepository
+import gt.uvg.uvgspot.domain.repository.CrashReporter
 import gt.uvg.uvgspot.domain.repository.SessionRepository
 import java.util.Date
 import java.util.concurrent.ConcurrentHashMap
@@ -34,8 +35,10 @@ import kotlinx.coroutines.sync.Mutex
 class FirestoreAvailabilityRepository(
     private val firestore: FirebaseFirestore,
     private val sessionRepository: SessionRepository,
-    private val preferences: SharedPreferences
+    private val preferences: SharedPreferences,
+    private val crashReporter: CrashReporter
 ) : AvailabilityRepository {
+
     private val submissions = MutableStateFlow<Map<String, ReportSubmission>>(emptyMap())
     private val submissionLocks = ConcurrentHashMap<String, Mutex>()
 
@@ -52,6 +55,7 @@ class FirestoreAvailabilityRepository(
             .addSnapshotListener(MetadataChanges.INCLUDE) { snapshot, failure ->
                 received.set(true)
                 if (failure != null) {
+                    crashReporter.recordNonFatal(failure)
                     trySend(DataResult.Failure(failure.toDataError()))
                 } else if (snapshot != null) {
                     try {
@@ -68,6 +72,7 @@ class FirestoreAvailabilityRepository(
                             DataResult.Success(reports, snapshot.metadata.isFromCache)
                         })
                     } catch (exception: RuntimeException) {
+                        crashReporter.recordNonFatal(exception)
                         trySend(DataResult.Failure(DataError.INVALID_DATA))
                     }
                 }
@@ -130,6 +135,7 @@ class FirestoreAvailabilityRepository(
             }
             throw exception
         } catch (exception: Exception) {
+            crashReporter.recordNonFatal(exception)
             updateSubmission(spaceId, ReportSubmission(SubmissionStatus.ERROR, error = exception.toDataError()))
         } finally {
             lock.unlock()
@@ -151,6 +157,7 @@ class FirestoreAvailabilityRepository(
                 updateSubmission(spaceId, ReportSubmission(SubmissionStatus.CONFIRMED, document.id))
             }
         }.addOnFailureListener { exception ->
+            crashReporter.recordNonFatal(exception)
             if (submissions.value[spaceId]?.reportId == document.id) {
                 preferences.edit().remove(reportKey(spaceId)).apply()
                 updateSubmission(spaceId, ReportSubmission(SubmissionStatus.ERROR, document.id, exception.toDataError()))
@@ -163,6 +170,7 @@ class FirestoreAvailabilityRepository(
             .addSnapshotListener(MetadataChanges.INCLUDE) { snapshot, failure ->
                 if (submissions.value[spaceId]?.reportId != reportId) return@addSnapshotListener
                 if (failure != null) {
+                    crashReporter.recordNonFatal(failure)
                     val status = if (submissions.value[spaceId]?.status == SubmissionStatus.PENDING) {
                         SubmissionStatus.PENDING
                     } else SubmissionStatus.ERROR
@@ -184,6 +192,7 @@ class FirestoreAvailabilityRepository(
                             updateSubmission(spaceId, ReportSubmission(SubmissionStatus.ERROR, reportId, DataError.NOT_FOUND))
                         }
                     } catch (exception: RuntimeException) {
+                        crashReporter.recordNonFatal(exception)
                         updateSubmission(spaceId, ReportSubmission(SubmissionStatus.ERROR, reportId, DataError.INVALID_DATA))
                     }
                 }

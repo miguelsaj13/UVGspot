@@ -1,10 +1,13 @@
 package gt.uvg.uvgspot.ui.components
 
 import androidx.compose.foundation.layout.WindowInsets
-import androidx.compose.material.icons.filled.FavoriteBorder
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.LocationOn
-import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.outlined.FavoriteBorder
+import androidx.compose.material.icons.outlined.Home
+import androidx.compose.material.icons.outlined.LocationOn
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.NavigationBar
@@ -12,8 +15,8 @@ import androidx.compose.material3.NavigationBarItem
 import androidx.compose.material3.NavigationBarItemDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 
 enum class BottomDestination {
     HOME,
@@ -34,13 +37,16 @@ fun BottomNavigationBar(
         windowInsets = WindowInsets(0, 0, 0, 0),
         containerColor = MaterialTheme.colorScheme.surface
     ) {
-
         NavigationBarItem(
             selected = selectedDestination == BottomDestination.HOME,
             onClick = onHomeClick,
             icon = {
                 Icon(
-                    imageVector = Icons.Default.Home,
+                    imageVector = if (selectedDestination == BottomDestination.HOME) {
+                        Icons.Filled.Home
+                    } else {
+                        Icons.Outlined.Home
+                    },
                     contentDescription = "Inicio"
                 )
             },
@@ -58,7 +64,11 @@ fun BottomNavigationBar(
             onClick = onSpacesClick,
             icon = {
                 Icon(
-                    imageVector = Icons.Default.LocationOn,
+                    imageVector = if (selectedDestination == BottomDestination.SPACES) {
+                        Icons.Filled.LocationOn
+                    } else {
+                        Icons.Outlined.LocationOn
+                    },
                     contentDescription = "Espacios"
                 )
             },
@@ -76,7 +86,11 @@ fun BottomNavigationBar(
             onClick = onFavoritesClick,
             icon = {
                 Icon(
-                    imageVector = Icons.Default.FavoriteBorder,
+                    imageVector = if (selectedDestination == BottomDestination.FAVORITES) {
+                        Icons.Filled.Favorite
+                    } else {
+                        Icons.Outlined.FavoriteBorder
+                    },
                     contentDescription = "Favoritos"
                 )
             },
@@ -96,5 +110,7 @@ private fun bottomNavigationColors() =
     NavigationBarItemDefaults.colors(
         selectedIconColor = MaterialTheme.colorScheme.primary,
         selectedTextColor = MaterialTheme.colorScheme.primary,
+        unselectedIconColor = MaterialTheme.colorScheme.onSurfaceVariant,
+        unselectedTextColor = MaterialTheme.colorScheme.onSurfaceVariant,
         indicatorColor = Color.Transparent
     )

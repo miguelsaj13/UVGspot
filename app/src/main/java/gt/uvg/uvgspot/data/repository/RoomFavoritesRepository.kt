@@ -4,6 +4,7 @@ import gt.uvg.uvgspot.data.local.FavoriteEntity
 import gt.uvg.uvgspot.data.local.FavoritesDao
 import gt.uvg.uvgspot.domain.model.DataError
 import gt.uvg.uvgspot.domain.model.DataResult
+import gt.uvg.uvgspot.domain.repository.CrashReporter
 import gt.uvg.uvgspot.domain.repository.FavoritesRepository
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.flow.Flow
@@ -11,12 +12,17 @@ import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.onStart
 
-class RoomFavoritesRepository(private val dao: FavoritesDao) : FavoritesRepository {
+class RoomFavoritesRepository(
+    private val dao: FavoritesDao,
+    private val crashReporter: CrashReporter
+) : FavoritesRepository {
+
     override fun observeFavoriteIds(): Flow<DataResult<Set<String>>> = dao.observeFavoriteIds()
         .map<List<String>, DataResult<Set<String>>> { DataResult.Success(it.toSet()) }
         .onStart { emit(DataResult.Loading) }
         .catch { exception ->
             if (exception is CancellationException) throw exception
+            crashReporter.recordNonFatal(exception)
             emit(DataResult.Failure(DataError.STORAGE))
         }
 
@@ -29,6 +35,7 @@ class RoomFavoritesRepository(private val dao: FavoritesDao) : FavoritesReposito
         } catch (exception: CancellationException) {
             throw exception
         } catch (exception: Exception) {
+            crashReporter.recordNonFatal(exception)
             DataResult.Failure(DataError.STORAGE)
         }
     }

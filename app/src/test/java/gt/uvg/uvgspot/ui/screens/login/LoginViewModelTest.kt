@@ -19,7 +19,7 @@ class LoginViewModelTest {
         val viewModel = validForm()
         val state = viewModel.uiState.value
         assertTrue(state.isFormValid)
-        assertNull(state.carnetError)
+        assertNull(state.studentIdError)
         assertNull(state.emailError)
         assertNull(state.passwordError)
     }
@@ -27,13 +27,13 @@ class LoginViewModelTest {
     @Test
     fun invalidCarnetImmediatelyDisablesPreviouslyValidForm() {
         val viewModel = validForm()
-        viewModel.onCarnetChange("12a45")
+        viewModel.onStudentIdChage("12a45")
         assertFalse(viewModel.uiState.value.isFormValid)
-        assertNotNull(viewModel.uiState.value.carnetError)
-        viewModel.onCarnetChange("1234")
-        assertNotNull(viewModel.uiState.value.carnetError)
-        viewModel.onCarnetChange("123456789")
-        assertNotNull(viewModel.uiState.value.carnetError)
+        assertNotNull(viewModel.uiState.value.studentIdError)
+        viewModel.onStudentIdChage("1234")
+        assertNotNull(viewModel.uiState.value.studentIdError)
+        viewModel.onStudentIdChage("123456789")
+        assertNotNull(viewModel.uiState.value.studentIdError)
     }
 
     @Test
@@ -75,7 +75,7 @@ class LoginViewModelTest {
     }
 
     private fun validForm() = LoginViewModel().apply {
-        onCarnetChange("24123")
+        onStudentIdChage("24123")
         onEmailChange("student@uvg.edu.gt")
         onPasswordChange("12345678")
     }

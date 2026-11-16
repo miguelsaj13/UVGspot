@@ -14,9 +14,11 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.callbackFlow
 import kotlinx.coroutines.launch
+import gt.uvg.uvgspot.domain.repository.CrashReporter
 
 class FirestoreStudySpaceRepository(
-    private val firestore: FirebaseFirestore
+    private val firestore: FirebaseFirestore,
+    private val crashReporter: CrashReporter
 ) : StudySpaceRepository {
     override fun observeStudySpaces(): Flow<DataResult<List<StudySpace>>> = callbackFlow {
         trySend(DataResult.Loading)
@@ -29,6 +31,7 @@ class FirestoreStudySpaceRepository(
             .addSnapshotListener(MetadataChanges.INCLUDE) { snapshot, failure ->
                 received.set(true)
                 if (failure != null) {
+                    crashReporter.recordNonFatal(failure)
                     trySend(DataResult.Failure(failure.toDataError()))
                 } else if (snapshot != null) {
                     try {
@@ -41,6 +44,7 @@ class FirestoreStudySpaceRepository(
                             DataResult.Success(spaces, snapshot.metadata.isFromCache)
                         })
                     } catch (exception: IllegalArgumentException) {
+                        crashReporter.recordNonFatal(exception)
                         trySend(DataResult.Failure(DataError.INVALID_DATA))
                     }
                 }
@@ -64,6 +68,7 @@ class FirestoreStudySpaceRepository(
             .addSnapshotListener(MetadataChanges.INCLUDE) { snapshot, failure ->
                 received.set(true)
                 if (failure != null) {
+                    crashReporter.recordNonFatal(failure)
                     trySend(DataResult.Failure(failure.toDataError()))
                 } else if (snapshot != null) {
                     try {
@@ -74,6 +79,7 @@ class FirestoreStudySpaceRepository(
                             DataResult.Success(space, snapshot.metadata.isFromCache)
                         })
                     } catch (exception: IllegalArgumentException) {
+                        crashReporter.recordNonFatal(exception)
                         trySend(DataResult.Failure(DataError.INVALID_DATA))
                     }
                 }
